@@ -1,29 +1,35 @@
+import os
 from dotenv import load_dotenv
-load_dotenv()
 
 from agents.midi_analysis_agent import MIDIAnalysisAgent
 from agents.role_assignment_agent import RoleAssignmentAgent
-from agents.orchestration_planner_agent import OrchestrationPlannerAgent
 from agents.note_assignment_agent import NoteAssignmentAgent
-from agents.validation_agent import ValidationAgent
-from agents.explanation_agent import ExplanationAgent
-from utils.score_renderer import render_pdf
+from agents.feature_extraction_agent import FeatureExtractionAgent
+from utils.score_renderer import render_score
 
-analysis = MIDIAnalysisAgent()
-roles = RoleAssignmentAgent()
-planner = OrchestrationPlannerAgent()
-assigner = NoteAssignmentAgent()
-validator = ValidationAgent()
-explainer = ExplanationAgent()
+load_dotenv()
 
-notes, tempo = analysis.run("input.mid")
-melody, harmony, bass = roles.run(notes)
+INPUT_MIDI = "input.mid"
 
-plan = planner.run()  # logged / explainable
-parts = assigner.run(melody, harmony, bass)
-validated = validator.run(parts)
+midi_agent = MIDIAnalysisAgent()
+role_agent = RoleAssignmentAgent()
+note_agent = NoteAssignmentAgent()
+feature_agent = FeatureExtractionAgent()
 
-render_pdf(validated)
+notes, tempo = midi_agent.run(INPUT_MIDI)
+melody, harmony, bass = role_agent.run(notes)
+roles = {
+    "Melody": melody,
+    "Harmony": harmony,
+    "Bass": bass
+}
+features = feature_agent.run(roles, tempo)
 
-print("\n--- Orchestration Explanation ---\n")
-print(explainer.run())
+assignments = note_agent.run(roles,features)
+for inst, notes in assignments.items():
+    print(inst, notes[0])
+    break
+
+render_score(assignments, tempo)
+
+print("✅ Orchestral MusicXML generated in ./output/")
