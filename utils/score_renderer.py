@@ -2,7 +2,7 @@ from music21 import stream, note, instrument, tempo, meter
 
 GRID = 0.25  # 16th note (in beats)
 
-def render_score(assignments, tempo_bpm):
+def render_score(assignments, tempo_bpm, output_path=None):
     score = stream.Score()
     score.insert(0, tempo.MetronomeMark(number=tempo_bpm))
 
@@ -25,4 +25,8 @@ def render_score(assignments, tempo_bpm):
 
         score.append(part)
 
-    score.write("musicxml", "output/orchestral_score.musicxml")
+    if output_path is None:
+        output_path = "output/orchestral_score.musicxml"
+    
+    score.write("musicxml", output_path)
+    return score

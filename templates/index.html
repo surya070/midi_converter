@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MIDI to Orchestral Score Converter</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎼 MIDI to Orchestral Score Converter</h1>
+            <p class="subtitle">Transform your MIDI files into beautiful orchestral MusicXML scores</p>
+        </header>
+
+        <main>
+            <div class="upload-section" id="uploadSection">
+                <div class="upload-card">
+                    <div class="upload-icon">📁</div>
+                    <h2>Upload MIDI File</h2>
+                    <form id="uploadForm" enctype="multipart/form-data">
+                        <div class="file-input-wrapper">
+                            <input type="file" id="midiFile" name="file" accept=".mid,.midi" required>
+                            <label for="midiFile" class="file-label">
+                                <span class="file-label-text">Choose MIDI File</span>
+                                <span class="file-label-browse">Browse</span>
+                            </label>
+                        </div>
+                        <div class="file-name" id="fileName"></div>
+                        <button type="submit" class="convert-btn" id="convertBtn">
+                            <span class="btn-text">Convert to Orchestral Score</span>
+                            <span class="btn-loader" id="btnLoader"></span>
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="result-section" id="resultSection" style="display: none;">
+                <div class="result-card">
+                    <div class="result-header">
+                        <h2>✅ Conversion Complete!</h2>
+                        <div class="result-info">
+                            <div class="info-item">
+                                <span class="info-label">Tempo:</span>
+                                <span class="info-value" id="tempoValue">-</span> BPM
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Instruments:</span>
+                                <span class="info-value" id="instrumentsValue">-</span>
+                            </div>
+                        </div>
+                        <a href="#" id="downloadBtn" class="download-btn">📥 Download MusicXML</a>
+                    </div>
+
+                    <div class="musicxml-display">
+                        <div class="musicxml-header">
+                            <h3>Generated MusicXML</h3>
+                            <button class="copy-btn" id="copyBtn">📋 Copy</button>
+                        </div>
+                        <pre id="musicxmlContent" class="musicxml-content"></pre>
+                    </div>
+                </div>
+            </div>
+
+            <div class="error-message" id="errorMessage" style="display: none;"></div>
+        </main>
+
+        <footer>
+            <p>Powered by AI-assisted orchestration • MusicXML compatible with MuseScore, SoundSlice, and Sibelius</p>
+        </footer>
+    </div>
+
+    <script>
+        const uploadForm = document.getElementById('uploadForm');
+        const midiFileInput = document.getElementById('midiFile');
+        const fileName = document.getElementById('fileName');
+        const convertBtn = document.getElementById('convertBtn');
+        const btnLoader = document.getElementById('btnLoader');
+        const uploadSection = document.getElementById('uploadSection');
+        const resultSection = document.getElementById('resultSection');
+        const errorMessage = document.getElementById('errorMessage');
+        const musicxmlContent = document.getElementById('musicxmlContent');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const copyBtn = document.getElementById('copyBtn');
+        const tempoValue = document.getElementById('tempoValue');
+        const instrumentsValue = document.getElementById('instrumentsValue');
+
+        // Show selected file name
+        midiFileInput.addEventListener('change', function(e) {
+            if (e.target.files.length > 0) {
+                fileName.textContent = `Selected: ${e.target.files[0].name}`;
+                fileName.style.display = 'block';
+            } else {
+                fileName.style.display = 'none';
+            }
+        });
+
+        // Handle form submission
+        uploadForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData();
+            formData.append('file', midiFileInput.files[0]);
+
+            // Show loading state
+            convertBtn.disabled = true;
+            btnLoader.style.display = 'inline-block';
+            convertBtn.querySelector('.btn-text').textContent = 'Converting...';
+            errorMessage.style.display = 'none';
+            resultSection.style.display = 'none';
+
+            try {
+                const response = await fetch('/convert', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    // Display results
+                    musicxmlContent.textContent = data.musicxml;
+                    tempoValue.textContent = data.tempo;
+                    instrumentsValue.textContent = data.instruments.join(', ');
+                    downloadBtn.href = data.download_url;
+                    
+                    resultSection.style.display = 'block';
+                    uploadSection.style.display = 'none';
+                } else {
+                    showError(data.error || 'Conversion failed. Please try again.');
+                }
+            } catch (error) {
+                showError('An error occurred: ' + error.message);
+            } finally {
+                // Reset button state
+                convertBtn.disabled = false;
+                btnLoader.style.display = 'none';
+                convertBtn.querySelector('.btn-text').textContent = 'Convert to Orchestral Score';
+            }
+        });
+
+        // Copy to clipboard
+        copyBtn.addEventListener('click', function() {
+            const text = musicxmlContent.textContent;
+            navigator.clipboard.writeText(text).then(() => {
+                copyBtn.textContent = '✓ Copied!';
+                setTimeout(() => {
+                    copyBtn.textContent = '📋 Copy';
+                }, 2000);
+            });
+        });
+
+        function showError(message) {
+            errorMessage.textContent = '❌ ' + message;
+            errorMessage.style.display = 'block';
+        }
+    </script>
+</body>
+</html>
+

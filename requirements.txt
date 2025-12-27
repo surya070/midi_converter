@@ -2,3 +2,5 @@ pretty_midi
 music21
 google-genai
 python-dotenv
+flask
+werkzeug
