@@ -113,7 +113,16 @@ def convert():
             "Bass": bass
         }
         features = feature_agent.run(roles, tempo)
-        assignments = note_agent.run(roles, features)
+        note_agent_result = note_agent.run(roles, features)
+        
+        # Extract assignments and explanations
+        if isinstance(note_agent_result, dict) and "assignments" in note_agent_result:
+            assignments = note_agent_result["assignments"]
+            explanations = note_agent_result.get("explanations", {})
+        else:
+            # Fallback for old format
+            assignments = note_agent_result
+            explanations = {}
         
         # Generate unique output filename
         output_filename = f"orchestral_score_{os.urandom(8).hex()}.musicxml"
@@ -138,6 +147,7 @@ def convert():
         session['instruments'] = instruments
         session['tempo'] = round(tempo, 2)
         session['download_url'] = download_url
+        session['explanations'] = explanations  # Store Gemini's explanations
         
         # Mark session as modified to ensure it's saved
         session.modified = True
@@ -174,11 +184,13 @@ def results():
     instruments = session.get('instruments', [])
     tempo = session.get('tempo', 0)
     download_url = session.get('download_url', '')
+    explanations = session.get('explanations', {})
     
     # Debug: Check what's in session
     print(f"Results page - Session keys: {list(session.keys())}")
     print(f"Results page - output_filename: {output_filename}")
     print(f"Results page - instruments: {instruments}, tempo: {tempo}")
+    print(f"Results page - explanations: {explanations}")
     
     if not output_filename:
         # If no file reference in session, redirect to home
@@ -197,7 +209,8 @@ def results():
                          musicxml='',  # Empty - preview removed for performance
                          instruments=instruments,
                          tempo=tempo,
-                         download_url=download_url)
+                         download_url=download_url,
+                         explanations=explanations)
 
 @app.route('/download/<filename>')
 def download(filename):

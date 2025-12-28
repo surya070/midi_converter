@@ -45,6 +45,24 @@
                         </div>
                     </div>
 
+                    {% if explanations %}
+                    <div class="explanations-box">
+                        <h4>🎯 Instrument Selection Explanations</h4>
+                        <div class="explanations-content">
+                            {% for role, explanation in explanations.items() %}
+                            <div class="explanation-item">
+                                <div class="explanation-role">
+                                    <strong>{{ role }}:</strong>
+                                </div>
+                                <div class="explanation-text">
+                                    {{ explanation }}
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+
                     <div class="info-box">
                         <h4>📝 What's Next?</h4>
                         <ul>

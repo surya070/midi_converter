@@ -414,6 +414,50 @@ footer {
     font-weight: bold;
 }
 
+/* Explanations section */
+.explanations-box {
+    margin-top: 30px;
+    margin-bottom: 30px;
+    padding: 25px;
+    background: rgba(108, 92, 231, 0.1);
+    border: 1px solid var(--accent-purple);
+    border-radius: 8px;
+}
+
+.explanations-box h4 {
+    color: var(--accent-purple);
+    margin-bottom: 20px;
+    font-size: 1.2rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.explanations-content {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.explanation-item {
+    padding: 15px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 6px;
+    border-left: 3px solid var(--accent-purple);
+}
+
+.explanation-role {
+    color: var(--primary-gold);
+    font-size: 1.1rem;
+    margin-bottom: 8px;
+}
+
+.explanation-text {
+    color: var(--text-secondary);
+    line-height: 1.6;
+    font-size: 0.95rem;
+}
+
 .copy-icon, .copy-text {
     display: inline-block;
 }

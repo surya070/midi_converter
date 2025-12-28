@@ -46,7 +46,7 @@ For each role, you are given:
 - Average duration
 - Polyphony level
 
-Use these features to select instruments. You can select multiple instruments per role if needed to mimick the original sound exactly.
+Use these features to select instruments. You can select multiple instruments per role to mimick the original sound exactly.
 
 Allowed instrument names:
 Violin, Viola, Cello, Double Bass, Harp, Guitar, Electric Guitar, Bass Guitar,
@@ -64,14 +64,20 @@ Rules:
 - Avoid redundancy
 - Prefer fewer instruments if possible
 - Return STRICT JSON ONLY
-- NO explanations
-- NO markdown
+- Include brief explanations for your choices
 
 Output format:
 {{
-  "Melody": ["InstrumentName"],
-  "Harmony": ["InstrumentName"],
-  "Bass": ["InstrumentName"]
+  "assignments": {{
+    "Melody": ["InstrumentName"],
+    "Harmony": ["InstrumentName"],
+    "Bass": ["InstrumentName"]
+  }},
+  "explanations": {{
+    "Melody": "Brief explanation of why you chose these instruments for the melody",
+    "Harmony": "Brief explanation of why you chose these instruments for the harmony",
+    "Bass": "Brief explanation of why you chose these instruments for the bass"
+  }}
 }}
 
 FEATURES:
@@ -115,8 +121,21 @@ Average duration (quarter lengths): {features["Bass"]["avg_duration_ql"]:.2f}
                 trimmed[role] = instruments[:MAX_PER_ROLE.get(role, 1)]
             return trimmed
 
-        plan = self._extract_json(raw_text)
-        plan = trim_plan(plan)
+        plan_data = self._extract_json(raw_text)
+        
+        # Extract assignments and explanations
+        if plan_data and "assignments" in plan_data:
+            plan = plan_data["assignments"]
+            explanations = plan_data.get("explanations", {})
+        elif plan_data:
+            # Fallback: if old format (just assignments dict)
+            plan = plan_data
+            explanations = {}
+        else:
+            plan = None
+            explanations = {}
+        
+        plan = trim_plan(plan) if plan else None
 
         # 🔁 FALLBACK (CRITICAL FOR STABILITY)
         if plan is None:
@@ -125,6 +144,11 @@ Average duration (quarter lengths): {features["Bass"]["avg_duration_ql"]:.2f}
                 "Melody": ["Violin"],
                 "Harmony": ["Viola"],
                 "Bass": ["Cello"]
+            }
+            explanations = {
+                "Melody": "Default violin chosen for melody range",
+                "Harmony": "Default viola chosen for harmony range",
+                "Bass": "Default cello chosen for bass range"
             }
 
         INSTRUMENT_MAP = {
@@ -189,4 +213,8 @@ Average duration (quarter lengths): {features["Bass"]["avg_duration_ql"]:.2f}
         if reassigned_notes:
             print(f"✓ Reassigned {len(reassigned_notes)} note(s) to suitable instruments")
         
-        return validated_assignments
+        # Return both assignments and explanations
+        return {
+            "assignments": validated_assignments,
+            "explanations": explanations
+        }
