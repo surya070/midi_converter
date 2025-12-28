@@ -2,6 +2,15 @@ from google import genai
 import os
 import json
 import re
+import sys
+from pathlib import Path
+
+# Add parent directory to path for mcp import
+parent_dir = Path(__file__).parent.parent
+if str(parent_dir) not in sys.path:
+    sys.path.insert(0, str(parent_dir))
+
+from mcp.music_rules_server import MusicRulesServer
 
 class NoteAssignmentAgent:
     def __init__(self):
@@ -10,6 +19,7 @@ class NoteAssignmentAgent:
         for m in x:
             print(m.name)
         self.model = "gemini-3-flash-preview"
+        self.rules_server = MusicRulesServer()
 
     def _extract_json(self, text):
         """
@@ -147,6 +157,36 @@ Average duration (quarter lengths): {features["Bass"]["avg_duration_ql"]:.2f}
             for inst in instruments:
                 assignments.setdefault(normalize(inst), []).extend(roles[role])
 
-
-
-        return assignments
+        # Validate and filter notes by instrument pitch ranges
+        validated_assignments = {}
+        reassigned_notes = []
+        
+        for inst_name, notes in assignments.items():
+            valid_notes, invalid_notes = self.rules_server.filter_notes_by_range(inst_name, notes)
+            
+            # Add valid notes first
+            if valid_notes:
+                validated_assignments.setdefault(inst_name, []).extend(valid_notes)
+            
+            # Handle invalid notes
+            if invalid_notes:
+                print(f"⚠️  {len(invalid_notes)} note(s) out of range for {inst_name}")
+                # Try to reassign invalid notes to suitable instruments
+                for note in invalid_notes:
+                    suitable_inst = self.rules_server.find_suitable_instrument(
+                        note["pitch"], 
+                        current_instrument=inst_name,
+                        preferred_instruments=list(assignments.keys())
+                    )
+                    if suitable_inst:
+                        reassigned_notes.append((note, inst_name, suitable_inst))
+                        validated_assignments.setdefault(suitable_inst, []).append(note)
+                    else:
+                        # If no suitable instrument found, keep the note anyway (don't lose data)
+                        print(f"   Note pitch {note['pitch']} couldn't be reassigned, keeping with {inst_name}")
+                        validated_assignments.setdefault(inst_name, []).append(note)
+        
+        if reassigned_notes:
+            print(f"✓ Reassigned {len(reassigned_notes)} note(s) to suitable instruments")
+        
+        return validated_assignments

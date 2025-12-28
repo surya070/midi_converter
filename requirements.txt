@@ -4,4 +4,3 @@ google-genai
 python-dotenv
 flask
 werkzeug
-gunicorn

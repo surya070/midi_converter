@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Orchestration Results - MIDI Converter</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎼 Orchestration Complete!</h1>
+            <p class="subtitle">Your MIDI file has been successfully converted to an orchestral score</p>
+        </header>
+
+        <main>
+            <div class="result-section">
+                <div class="result-card">
+                    <div class="result-header">
+                        <div class="success-badge">
+                            <span class="success-icon">✅</span>
+                            <h2>Conversion Successful</h2>
+                        </div>
+                        
+                        <div class="result-info">
+                            <div class="info-item">
+                                <span class="info-label">Tempo:</span>
+                                <span class="info-value" id="tempoValue">{{ tempo }} BPM</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Instruments:</span>
+                                <span class="info-value" id="instrumentsValue">{{ instruments|join(', ') }}</span>
+                            </div>
+                        </div>
+
+                        <div class="action-buttons">
+                            <button type="button" class="download-btn" id="downloadBtn">
+                                <span class="btn-icon">📥</span>
+                                <span class="btn-text">Download MusicXML</span>
+                            </button>
+                            <a href="{{ url_for('index') }}" class="new-conversion-btn">
+                                <span class="btn-icon">🔄</span>
+                                <span class="btn-text">Convert Another File</span>
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="info-box">
+                        <h4>📝 What's Next?</h4>
+                        <ul>
+                            <li>Download the MusicXML file to open in MuseScore, Sibelius, or other music notation software</li>
+                            <li>The file contains your MIDI converted to orchestral instrumentation</li>
+                            <li>You can edit and refine the score in your preferred notation software</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <footer>
+            <p>Powered by AI-assisted orchestration • MusicXML compatible with MuseScore, SoundSlice, and Sibelius</p>
+        </footer>
+    </div>
+
+    <script>
+        const downloadBtn = document.getElementById('downloadBtn');
+
+        // Download button - use server-side streaming (like Google Drive)
+        downloadBtn.addEventListener('click', async function(e) {
+            e.preventDefault();
+            
+            const btnText = downloadBtn.querySelector('.btn-text');
+            const originalText = btnText.textContent;
+            const downloadUrl = '{{ download_url }}';
+            
+            // Show loading state
+            btnText.textContent = 'Downloading...';
+            downloadBtn.disabled = true;
+            
+            try {
+                // Primary method: Server-side streaming download (like Google Drive)
+                // This handles large files efficiently with chunked transfer
+                if (downloadUrl && downloadUrl !== '') {
+                    // Create a hidden iframe for download (works better than window.location)
+                    const iframe = document.createElement('iframe');
+                    iframe.style.display = 'none';
+                    iframe.src = downloadUrl;
+                    document.body.appendChild(iframe);
+                    
+                    // Clean up after download starts
+                    setTimeout(() => {
+                        document.body.removeChild(iframe);
+                    }, 5000);
+                    
+                    // Visual feedback
+                    btnText.textContent = '✓ Download Started!';
+                    downloadBtn.style.background = 'var(--success-green)';
+                    
+                    setTimeout(() => {
+                        btnText.textContent = originalText;
+                        downloadBtn.style.background = '';
+                        downloadBtn.disabled = false;
+                    }, 2000);
+                    
+                    return;
+                }
+                
+                // Fallback: Use download-blob endpoint
+                window.location.href = '{{ url_for("download_blob") }}';
+                
+            } catch (error) {
+                console.error('Download failed:', error);
+                alert('Download failed: ' + error.message);
+                downloadBtn.disabled = false;
+                btnText.textContent = originalText;
+            }
+        });
+    </script>
+</body>
+</html>
+

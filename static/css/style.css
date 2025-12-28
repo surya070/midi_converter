@@ -308,6 +308,116 @@ footer {
     margin-top: 40px;
 }
 
+/* Results page specific styles */
+.success-badge {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 25px;
+    padding: 20px;
+    background: rgba(0, 212, 170, 0.1);
+    border: 2px solid var(--success-green);
+    border-radius: 12px;
+}
+
+.success-icon {
+    font-size: 2.5rem;
+}
+
+.success-badge h2 {
+    color: var(--success-green);
+    margin: 0;
+    font-size: 1.8rem;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 15px;
+    margin-top: 25px;
+    flex-wrap: wrap;
+}
+
+.download-btn, .new-conversion-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 28px;
+    text-decoration: none;
+    border-radius: 8px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 1rem;
+}
+
+.download-btn {
+    background: var(--accent-teal);
+    color: var(--text-primary);
+}
+
+.download-btn:hover {
+    background: #00a085;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0, 184, 148, 0.3);
+}
+
+.new-conversion-btn {
+    background: var(--secondary-blue);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+}
+
+.new-conversion-btn:hover {
+    background: var(--accent-purple);
+    border-color: var(--accent-purple);
+    transform: translateY(-2px);
+}
+
+.btn-icon {
+    font-size: 1.2rem;
+}
+
+.info-box {
+    margin-top: 30px;
+    padding: 20px;
+    background: rgba(212, 175, 55, 0.1);
+    border: 1px solid var(--primary-gold);
+    border-radius: 8px;
+}
+
+.info-box h4 {
+    color: var(--primary-gold);
+    margin-bottom: 15px;
+    font-size: 1.2rem;
+}
+
+.info-box ul {
+    list-style: none;
+    padding-left: 0;
+}
+
+.info-box li {
+    padding: 8px 0;
+    padding-left: 25px;
+    position: relative;
+    color: var(--text-secondary);
+    line-height: 1.6;
+}
+
+.info-box li:before {
+    content: "→";
+    position: absolute;
+    left: 0;
+    color: var(--primary-gold);
+    font-weight: bold;
+}
+
+.copy-icon, .copy-text {
+    display: inline-block;
+}
+
 /* Scrollbar styling */
 .musicxml-content::-webkit-scrollbar {
     width: 10px;
@@ -347,6 +457,24 @@ footer {
         flex-direction: column;
         align-items: flex-start;
         gap: 10px;
+    }
+
+    .action-buttons {
+        flex-direction: column;
+    }
+
+    .download-btn, .new-conversion-btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .success-badge {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .success-badge h2 {
+        font-size: 1.5rem;
     }
 }
 

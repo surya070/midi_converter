@@ -116,23 +116,28 @@
                 });
 
                 const data = await response.json();
+                
+                console.log('Response data:', data); // Debug log
 
                 if (data.success) {
-                    // Display results
-                    musicxmlContent.textContent = data.musicxml;
-                    tempoValue.textContent = data.tempo;
-                    instrumentsValue.textContent = data.instruments.join(', ');
-                    downloadBtn.href = data.download_url;
+                    // Always redirect to results page immediately
+                    const redirectUrl = data.redirect_url || '/results';
+                    console.log('Redirecting to:', redirectUrl);
                     
-                    resultSection.style.display = 'block';
-                    uploadSection.style.display = 'none';
+                    // Don't reset button state if redirecting - redirect immediately
+                    // Force immediate redirect - this will stop all further execution
+                    window.location.href = redirectUrl;
+                    return; // Stop execution - this prevents finally block from running
                 } else {
                     showError(data.error || 'Conversion failed. Please try again.');
+                    // Reset button state only on error
+                    convertBtn.disabled = false;
+                    btnLoader.style.display = 'none';
+                    convertBtn.querySelector('.btn-text').textContent = 'Convert to Orchestral Score';
                 }
             } catch (error) {
                 showError('An error occurred: ' + error.message);
-            } finally {
-                // Reset button state
+                // Reset button state on error
                 convertBtn.disabled = false;
                 btnLoader.style.display = 'none';
                 convertBtn.querySelector('.btn-text').textContent = 'Convert to Orchestral Score';
